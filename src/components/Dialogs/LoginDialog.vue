@@ -100,6 +100,8 @@
 <script setup>
 import { ref, watch, inject } from "vue";
 import { useStore } from "vuex";
+import authApi from '@/services/authApi'
+import router from "@/router";
 
 const store = useStore();
 const axios = inject("axios");
@@ -167,9 +169,9 @@ const processLogin = async () => {
 
   loading.value = true;
 
-  await store.dispatch("authStore/processLogin", formData.value);
+  const res = await authApi.processLogin(formData.value);
 
-  const loginStatus = store.getters["authStore/loginStatus"];
+  const loginStatus = res.loginStatus;
 
   loginStatus == true
     ? (loginpopUpRef.value = false)
@@ -178,6 +180,14 @@ const processLogin = async () => {
   errorBag.value = store.state.authStore.errorBag;
 
   loading.value = false;
+
+  if(loginStatus == true){
+    if(res.user.role == 'admin'){
+      router.push({name : 'admin.dashboard'});
+    }else{
+      router.push({name : 'Home'});
+    }
+  }
 
 };
 </script>

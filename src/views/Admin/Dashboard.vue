@@ -5,12 +5,37 @@
     </template>
 
     <template v-slot:content>
-      <DashboardWidgetsVue :users="state.users" :events="state.events" :posts="state.posts" :comments="state.comments" />
+      <DashboardWidgetsVue
+        :users="users"
+        :events="events"
+        :posts="comments"
+        :comments="posts"
+      />
     </template>
   </BaseLayout>
 </template>
 <script setup>
 import BaseLayout from "@/layouts/AdminLayout.vue";
 import DashboardWidgetsVue from "@/components/Admin/DashboardWidgets.vue";
-import state from "@/mixins/states";
+import states from "@/services/states";
+import { onMounted, ref } from "vue";
+
+const users = ref("");
+const events = ref("");
+const comments = ref("");
+const posts = ref("");
+
+onMounted(async () => {
+  const {
+    users: userCount,
+    events: eventCount,
+    comments: commentCount,
+    posts: postsCount,
+  } = await states.fetchStats();
+
+  users.value = userCount;
+  events.value = eventCount;
+  comments.value = commentCount;
+  posts.value = postsCount;
+});
 </script>

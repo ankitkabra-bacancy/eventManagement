@@ -93,7 +93,6 @@
             </td>
           </tr>
         </tbody>
-        
       </v-table>
       <v-row v-if="users.length > 0" justify="center">
         <v-col cols="8">
@@ -118,10 +117,10 @@ import BaseLayout from "@/layouts/AdminLayout.vue";
 import user from "@/store/modules/userprofile";
 import { inject, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
-import { load } from "webfontloader";
+import userAPI from "@/services/users";
 
 const users = ref([]);
-const search = ref('');
+const search = ref("");
 const paginationLength = ref(0);
 
 const axios = inject("axios");
@@ -135,48 +134,30 @@ const perPage = ref(10);
 
 const store = useStore();
 
-
 const getData = () => {
-  fetchUsers(page.value, perPage.value,search.value);
+  fetchUsers(page.value, perPage.value, search.value);
 };
 
 const searchUsers = () => {
-   page.value = 1;
-   fetchUsers(page.value, perPage.value,search.value);
-}
+  page.value = 1;
+  fetchUsers(page.value, perPage.value, search.value);
+};
 
 watch(perPage, (newval) => {
   page.value = 1;
-  fetchUsers(page.value, newval,search.value);
+  fetchUsers(page.value, newval, search.value);
 });
 
-const fetchUsers = async (page = 1, perPage = 10, search = '') => {
+const fetchUsers = async (page,perPage,search) => {
+  users.value = [];
   loading.value = true;
-  
-  await axios
-    .get(
-      `api/admin/users?page=${page}&perpage=${perPage}&search=${search}`,
-      {
-        headers: {
-          Authorization: cookies.get("token"),
-        },
-      }
-    )
-    .then((res) => {
-      paginationLength.value = res.data.last_page;
-      users.value = res.data.data;
-    })
-    .catch((err) => {
-      if (err.response && err.response.status === 401) {
-        store.dispatch("updateErrorSnackBar", {
-          status: true,
-          msg: "Unauthrorized !",
-        });
-      }
-    });
-
+  const res = await userAPI.fetchUsers(page,perPage,search);
+  paginationLength.value = res.paginationLength;
+  users.value = res.users;
   loading.value = false;
 };
 
-fetchUsers();
+onMounted(async () => {
+  await fetchUsers();
+});
 </script>

@@ -69,6 +69,8 @@
 import LoginDialog from "../Dialogs/LoginDialog.vue";
 import { computed, ref, toRefs, watch } from "vue";
 import { useStore } from "vuex";
+import authApi from "@/services/authApi";
+import router from "@/router";
 const store = useStore();
 const authToken = computed(() => store.state.authStore.authToken);
 
@@ -82,7 +84,17 @@ const emit = defineEmits(["logMeOut"]);
 
 const logMeOut = async () => {
   loading.value = true;
-  await store.dispatch("authStore/logOut");
+  const res = await authApi.logout();
   loading.value = false;
+
+  switch (res) {
+    case "success":
+      router.push({ name: "Home" });
+      break;
+
+    case "401":
+      router.push({ name: "Home" });
+      break;
+  }
 };
 </script>
